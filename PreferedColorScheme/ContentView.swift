@@ -11,14 +11,14 @@ enum Assets {
     static let weather = Image("Weather_icon")
 }
 
-enum schemeType: Int, Identifiable, CaseIterable {
+enum SchemeType: Int, Identifiable, CaseIterable {
     var id: Self { self }
     case system
     case light
     case dark
 }
 
-extension schemeType {
+extension SchemeType {
     var title: String {
         switch self {
         case .system:
@@ -33,8 +33,21 @@ extension schemeType {
 
 struct ContentView: View {
     
+    @AppStorage("systemThemeVal") private var systemTheme: Int = SchemeType.allCases.first!.rawValue
     @Environment(\.colorScheme) private var colorScheme
+    
     private var weahterTxt: String { colorScheme == .light ? "Day time" : "Night time" }
+    private var selectedScheme: ColorScheme? {
+        guard let theme = SchemeType(rawValue: systemTheme) else { return nil }
+        switch theme {
+        case .system:
+            return nil
+        case .light:
+            return .light
+        case .dark:
+            return .dark
+        }
+    }
     
     var body: some View {
         ZStack {
@@ -50,9 +63,21 @@ struct ContentView: View {
                 Text(weahterTxt)
                     .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
+                
+                Picker(selection: $systemTheme) {
+                    ForEach(SchemeType.allCases) { item in
+                        Text(item.title)
+                            .tag(item.rawValue)
+                    }
+                } label: {
+                    Text("Pick a theme")
+                }
+                .padding()
+                .background(.white, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
             
         }
+        .preferredColorScheme(selectedScheme)
     }
 }
 
